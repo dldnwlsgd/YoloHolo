@@ -3,7 +3,7 @@ using YoloHolo.Services;
 
 namespace YoloHolo.YoloLabeling
 {
-    public class YoloGameObject 
+    public class YoloGameObject
     {
         public Vector2 ImagePosition { get; }
         public string Name {get; }
@@ -11,9 +11,11 @@ namespace YoloHolo.YoloLabeling
         public Vector3? PositionInSpace { get; set; }
         public float TimeLastSeen { get; set; }
 
-        private const int MaxLabelDistance = 10;
+        private const int MaxLabelDistance = 5;
         private const float SphereCastSize = 0.15f;
         private const string SpatialMeshLayerName  = "Spatial Mesh";
+
+        private CheckingBody checkingBody;
 
         public YoloGameObject(
             YoloItem yoloItem, Transform cameraTransform, 
@@ -37,13 +39,12 @@ namespace YoloHolo.YoloLabeling
                 transform.right * (ImagePosition.x * width) - 
                 transform.up * (ImagePosition.y * height);
             PositionInSpace = CastOnSpatialMap(positionOnPlane, transform);
+            //checkingBody.IWantToCheck();
         }
 
         private Vector3? CastOnSpatialMap(Vector3 positionOnPlane, Transform transform)
         {
-            if (Physics.SphereCast(transform.position, SphereCastSize,
-                    (positionOnPlane - transform.position),
-                    out var hitInfo, MaxLabelDistance, LayerMask.GetMask(SpatialMeshLayerName)))
+            if (Physics.SphereCast(transform.position, SphereCastSize, (positionOnPlane - transform.position), out var hitInfo, MaxLabelDistance, LayerMask.GetMask(SpatialMeshLayerName)))
             {
                 return hitInfo.point;
             }

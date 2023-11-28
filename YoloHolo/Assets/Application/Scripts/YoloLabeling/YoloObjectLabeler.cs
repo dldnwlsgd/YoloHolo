@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using RealityCollective.ServiceFramework.Services;
+using Unity.VisualScripting;
 using UnityEngine;
 using YoloHolo.Services;
 using YoloHolo.Utilities;
@@ -44,6 +45,13 @@ namespace YoloHolo.YoloLabeling
         private readonly List<YoloGameObject> yoloGameObjects = new();
 
 
+        private CheckingBody checkingBody;
+
+        Vector3?[] assignedPosition = new Vector3?[3] {null, null, null };
+        bool isPointassigned = true;
+        bool ischeckingMethod = false;
+
+
         private void Start()
         {
             yoloProcessor = ServiceManager.Instance.GetService<IYoloProcessor>();
@@ -77,6 +85,8 @@ namespace YoloHolo.YoloLabeling
                 ShowRecognitions(foundObjects, cameraTransform);
                 Destroy(texture);
                 Destroy(cameraTransform.gameObject);
+
+                if (ischeckingMethod) { IWantToCheck();  }
             }
         }
 
@@ -90,11 +100,17 @@ namespace YoloHolo.YoloLabeling
                 if (newObj.PositionInSpace != null && !HasBeenSeenBefore(newObj))
                 {
                     yoloGameObjects.Add(newObj);
-                    newObj.DisplayObject = Instantiate(labelObject,
-                        newObj.PositionInSpace.Value, Quaternion.identity);
-                    newObj.DisplayObject.transform.parent = transform;
-                    var labelController = newObj.DisplayObject.GetComponent<ObjectLabelController>();
-                    labelController.SetText(newObj.Name);
+
+                    if(newObj.Name == "elephant")
+                    {
+                        AssignPointsForBodyModel(0, newObj);
+                    } else if (newObj.Name == "cow")
+                    {
+                        AssignPointsForBodyModel(1, newObj);
+                    } else if(newObj.Name == "zebra")
+                    {
+                        AssignPointsForBodyModel(2, newObj);
+                    }
                 }
             }
 
@@ -108,6 +124,22 @@ namespace YoloHolo.YoloLabeling
             }
         }
 
+        private void AssignPointsForBodyModel(int i, YoloGameObject newObj)
+        {
+            
+            assignedPosition[i]  = newObj.PositionInSpace;
+            Debug.Log($"num : {i}, {assignedPosition[i].Value}");
+            
+
+            newObj.DisplayObject = Instantiate(labelObject, newObj.PositionInSpace.Value, Quaternion.identity);
+            newObj.DisplayObject.transform.parent = transform;
+            var labelController = newObj.DisplayObject.GetComponent<ObjectLabelController>();
+            labelController.SetText(newObj.Name, assignedPosition[i].Value);
+            if (isPointassigned) { CheckPointState(); }
+            
+            //i = calculateBodyTransform.AssignPosition(i, assignedPosition[i].Value);
+        }
+
         private bool HasBeenSeenBefore(YoloGameObject obj)
         {
             var seenBefore = yoloGameObjects.FirstOrDefault(
@@ -119,6 +151,29 @@ namespace YoloHolo.YoloLabeling
                 seenBefore.TimeLastSeen = Time.time;
             }
             return seenBefore != null;
+        }
+
+        public void CheckPointState()
+        {
+            if (assignedPosition[0] != null && assignedPosition[1] != null && assignedPosition[2] != null)
+            {
+                Debug.Log("Position locate all !!");
+
+                isPointassigned = false;
+                ischeckingMethod = true;
+                //isPosition = true;
+            }
+            else
+            {
+                Debug.Log("Position no locate all");
+            }
+        }
+
+
+
+        public void IWantToCheck()
+        {
+            Debug.Log("adfasdfasdf");
         }
     }
 }

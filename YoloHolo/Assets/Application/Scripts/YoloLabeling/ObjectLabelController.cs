@@ -6,12 +6,14 @@ namespace YoloHolo.YoloLabeling
     public class ObjectLabelController : MonoBehaviour
     {
         [SerializeField] private TextMeshPro textMesh;
+        [SerializeField] private TextMeshPro positionTextMesh;
 
         [SerializeField] private GameObject contentParent;
 
-        public void SetText(string text)
+        public void SetText(string text, Vector3 position)
         {
             textMesh.text = text;
+            positionTextMesh.text = $"position : {position.x} {position.y} {position.z}";
         }
 
         private void Start()
